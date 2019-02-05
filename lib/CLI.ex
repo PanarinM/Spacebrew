@@ -2,7 +2,7 @@ defmodule Spacebrew.CLI do
   @moduledoc """
   CLI tool to manage Spacemacs config files for different pruposes.
   """
-  import Spacebrew.Configuration
+  import Spacebrew.Config
 
   @doc """
   Main function spawning Optimus and parsing arguments.
