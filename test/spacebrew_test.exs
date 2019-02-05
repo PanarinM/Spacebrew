@@ -1,8 +1,8 @@
 defmodule SpacebrewTest do
   use ExUnit.Case
-  doctest Spacebrew
+  # doctest Spacebrew
 
-  test "greets the world" do
-    assert Spacebrew.hello() == :world
-  end
+  # test "greets the world" do
+  #   assert Spacebrew.hello() == :world
+  # end
 end

@@ -8,11 +8,21 @@ defmodule Spacebrew.Config do
   """
   require Logger
 
-  @paths [
-    # The order is important here
-    "~/.config/spacebrew/.spacebrew",
-    "~/.spacebrew",
-  ]
+  @callback get_config() :: %Spacebrew.Params{}
+  @callback get_config_from_file(%Spacebrew.Params{}) :: %Spacebrew.Params{}
+  @callback get_config_from_env(%Spacebrew.Params{}) :: %Spacebrew.Params{}
+  @callback paths() :: list(String.t())
+
+  @doc """
+  Paths to check for config files
+  """
+  def paths do
+    [
+      # The order is important here
+      "~/.config/spacebrew/.spacebrew",
+      "~/.spacebrew",
+    ]
+  end
 
   @doc """
   Returns the configuration tuple.
@@ -25,10 +35,10 @@ defmodule Spacebrew.Config do
 
   @doc """
   Reads the data from configuration files cascading through them in order of
-  @paths
+  paths
   """
   def get_config_from_file(params) do
-    Enum.reduce(@paths, params, fn x, acc ->
+    Enum.reduce(paths(), params, fn x, acc ->
       read_file(x)
       |> case do
            {:ok, content} ->
@@ -73,7 +83,7 @@ defmodule Spacebrew.Config do
 
   defp parse_data(data) do
     Enum.map(data, fn x ->
-      [key, value] = String.split(x, "=", parts: 2, trim: true)
+      String.split(x, "=", parts: 2, trim: true)
     end)
     |> Map.new(fn [x, y] -> {String.to_atom(x), y} end)
   end
