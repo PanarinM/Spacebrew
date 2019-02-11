@@ -2,43 +2,54 @@ defmodule Spacebrew.Params do
   defstruct SPACEBREW_HOME: "~/.config/spacebrew"
 end
 
-defmodule Spacebrew.Config do
+defmodule Spacebrew.ConfigReader do
+  @callback get_config_values(%Spacebrew.Params{}, [String.t()]) :: %Spacebrew.Params{}
+end
+
+defmodule Spacebrew.ConfigReader.Env do
   @moduledoc """
   Config parser for the CLI tool.
   """
   require Logger
 
-  @callback get_config() :: %Spacebrew.Params{}
-  @callback get_config_from_file(%Spacebrew.Params{}) :: %Spacebrew.Params{}
-  @callback get_config_from_env(%Spacebrew.Params{}) :: %Spacebrew.Params{}
-  @callback paths() :: list(String.t())
+  @behaviour Spacebrew.ConfigReader
 
   @doc """
-  Paths to check for config files
+  Reads the data from Environmental variables defined in the Spacebrew.Params struct
   """
-  def paths do
-    [
-      # The order is important here
-      "~/.config/spacebrew/.spacebrew",
-      "~/.spacebrew",
-    ]
+  @impl Spacebrew.ConfigReader
+  def get_config_values(params, vars) do
+    vars
+    |> Enum.reduce(params, fn x, acc ->
+      env_value = x
+      |> System.get_env
+      if env_value != nil do
+        Logger.info "Env variable value #{x} found, using it"
+        struct!(acc, [{String.to_atom(x), env_value}])
+      else
+        Logger.info "Env variable value #{x} not found, pass"
+        acc
+      end
+    end)
   end
+end
 
-  @doc """
-  Returns the configuration tuple.
+defmodule Spacebrew.ConfigReader.File do
+  @moduledoc """
+  Config parser for the CLI tool.
   """
-  def get_config do
-    %Spacebrew.Params{}
-    |> get_config_from_file
-    |> get_config_from_env
-  end
+  require Logger
+
+  @behaviour Spacebrew.ConfigReader
+
 
   @doc """
   Reads the data from configuration files cascading through them in order of
   paths
   """
-  def get_config_from_file(params) do
-    Enum.reduce(paths(), params, fn x, acc ->
+  @impl Spacebrew.ConfigReader
+  def get_config_values(params, paths) do
+    Enum.reduce(paths, params, fn x, acc ->
       read_file(x)
       |> case do
            {:ok, content} ->
@@ -51,26 +62,6 @@ defmodule Spacebrew.Config do
     end)
   end
 
-  @doc """
-  Reads the data from Environmental variables defined in the Spacebrew.Params struct
-  """
-  def get_config_from_env(params) do
-    params
-    |> Map.keys()
-    |> Enum.filter(fn x -> x != :__struct__ end)
-    |> Enum.reduce(params, fn x, acc ->
-      env_value = x
-      |> to_string
-      |> System.get_env
-      if env_value != nil do
-        Logger.info "Env variable value #{x} found, using it"
-        struct!(acc, [{x, env_value}])
-      else
-        Logger.info "Env variable value #{x} not found, pass"
-        acc
-      end
-    end)
-  end
 
   defp read_file(path) do
     Path.expand(path)
@@ -86,5 +77,43 @@ defmodule Spacebrew.Config do
       String.split(x, "=", parts: 2, trim: true)
     end)
     |> Map.new(fn [x, y] -> {String.to_atom(x), y} end)
+  end
+end
+
+defmodule Spacebrew.Config.API do
+
+  @doc """
+  Returns the configuration tuple.
+  """
+  def get_config do
+    %Spacebrew.Params{}
+    |> Spacebrew.ConfigReader.File.get_config_values(paths())
+    |> Spacebrew.ConfigReader.Env.get_config_values(vars())
+  end
+
+  @doc """
+  Paths to check for config files
+  """
+  def paths do
+    [
+      # The order is important here
+      "~/.config/spacebrew/.spacebrew",
+      "~/.spacebrew",
+    ]
+  end
+
+  @doc """
+  Returns env variables to read
+  """
+  def vars do
+    %Spacebrew.Params{}
+    |> Map.keys
+    |> Enum.flat_map(fn x ->
+      if x == :__struct__ do
+        []
+      else
+        [to_string(x)]
+      end
+    end)
   end
 end

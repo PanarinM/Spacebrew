@@ -1,8 +1,8 @@
 defmodule Spacebrew.CLI do
   @moduledoc """
-  CLI tool to manage Spacemacs config files for different pruposes.
+  CLI tool to manage Spacemacs config files for different purposes.
   """
-  import Spacebrew.Config
+  # import Spacebrew.Config
 
   @doc """
   Main function spawning Optimus and parsing arguments.
@@ -56,7 +56,7 @@ defmodule Spacebrew.CLI do
     )
     |> Optimus.parse!(arguments)
 
-    configurations = get_config
+    # configurations = get_config
   end
 
   def subcommand({[:new], %Optimus.ParseResult{args: args, options: options}}) do

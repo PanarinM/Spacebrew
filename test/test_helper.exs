@@ -1,3 +1,3 @@
 ExUnit.start()
 
-Mox.defmock(Spacebrew.ConfigMock, for: Spacebrew.Config)
+# Mox.defmock(Spacebrew.ConfigAPIMock, for: Spacebrew.Config.API)
