@@ -1,3 +1,4 @@
+[![Build Status](https://travis-ci.org/PanarinM/Spacebrew.svg?branch=master)](https://travis-ci.org/PanarinM/Spacebrew)
 # Spacebrew
 
 **TODO: Add description**
