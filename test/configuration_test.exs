@@ -45,13 +45,13 @@ defmodule Spacebrew.Config.Test do
 
   test "config priority" do
       Spacebrew.ConfigFromFileMock
-      |> expect(:get_config_values, fn x, y ->
+      |> expect(:get_config_values, fn _x, _y ->
         %Spacebrew.Params{SPACEBREW_HOME: "from_file"}
       end)
       |> expect(:read_from, fn -> [] end)
 
       Spacebrew.ConfigFromEnvMock
-      |> expect(:get_config_values, fn x, y ->
+      |> expect(:get_config_values, fn _x, _y ->
         %Spacebrew.Params{SPACEBREW_HOME: "from_env"}
       end)
       |> expect(:read_from, fn -> [] end)
@@ -60,6 +60,6 @@ defmodule Spacebrew.Config.Test do
         [Spacebrew.ConfigFromFileMock,
           Spacebrew.ConfigFromEnvMock]
       )
-      assert config = %Spacebrew.Params{SPACEBREW_HOME: "from_env"}
+      assert config == %Spacebrew.Params{SPACEBREW_HOME: "from_env"}
   end
 end

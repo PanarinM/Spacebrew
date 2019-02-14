@@ -116,7 +116,7 @@ defmodule Spacebrew.Config.API do
   """
   def get_config(readers \\ [Spacebrew.ConfigReader.File, Spacebrew.ConfigReader.Env]) do
     Enum.reduce(readers, %Spacebrew.Params{}, fn x, acc ->
-      acc = x.get_config_values(acc, x.read_from)
+      x.get_config_values(acc, x.read_from)
     end)
   end
 
