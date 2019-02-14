@@ -1,3 +1,4 @@
 ExUnit.start()
 
-# Mox.defmock(Spacebrew.ConfigAPIMock, for: Spacebrew.Config.API)
+Mox.defmock(Spacebrew.ConfigFromFileMock, for: Spacebrew.ConfigReader)
+Mox.defmock(Spacebrew.ConfigFromEnvMock, for: Spacebrew.ConfigReader)

@@ -33,4 +33,33 @@ defmodule Spacebrew.Config.Test do
       SPACEBREW_HOME: "mid_importance"
     }
   end
+
+  test "config from env" do
+    System.put_env("SPACEBREW_HOME", "test_value")
+
+    assert Spacebrew.ConfigReader.Env.get_config_values(
+      %Spacebrew.Params{}) == %Spacebrew.Params{
+      SPACEBREW_HOME: "test_value"
+    }
+  end
+
+  test "config priority" do
+      Spacebrew.ConfigFromFileMock
+      |> expect(:get_config_values, fn x, y ->
+        %Spacebrew.Params{SPACEBREW_HOME: "from_file"}
+      end)
+      |> expect(:read_from, fn -> [] end)
+
+      Spacebrew.ConfigFromEnvMock
+      |> expect(:get_config_values, fn x, y ->
+        %Spacebrew.Params{SPACEBREW_HOME: "from_env"}
+      end)
+      |> expect(:read_from, fn -> [] end)
+
+      config = Spacebrew.Config.API.get_config(
+        [Spacebrew.ConfigFromFileMock,
+          Spacebrew.ConfigFromEnvMock]
+      )
+      assert config = %Spacebrew.Params{SPACEBREW_HOME: "from_env"}
+  end
 end
