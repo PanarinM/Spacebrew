@@ -16,7 +16,7 @@ defmodule Spacebrew.CLI do
     #    options: %{template: "/home/m-panarin/.spacemacs"},
     #    unknown: []
     #  }}
-    parsed_args = Optimus.new!(
+    Optimus.new!(
       name: "spacebrew",
       description: "Config brewer for Spacemacs.",
       about: """
@@ -55,10 +55,18 @@ defmodule Spacebrew.CLI do
       ]
     )
     |> Optimus.parse!(arguments)
-
-    # configurations = get_config
+    |> get_config
+    |> subcommand
   end
 
-  def subcommand({[:new], %Optimus.ParseResult{args: args, options: options}}) do
+  def subcommand({[:new], %Optimus.ParseResult{args: args, options: options}, config}) do
+    IO.puts "this was the 'new' command"
+    IO.inspect args
+    IO.inspect options
+    IO.inspect config
+  end
+  def get_config(command) do
+    command
+    |> Tuple.append(Spacebrew.Config.API.get_config)
   end
 end
