@@ -44,7 +44,7 @@ defmodule Spacebrew.ConfigReader.Env do
         Logger.info "Env variable value #{x} found, using it"
         struct!(acc, [{String.to_atom(x), env_value}])
       else
-        Logger.info "Env variable value #{x} not found, pass"
+        Logger.info "Env variable value #{x} not found, skip"
         acc
       end
     end)
@@ -91,7 +91,6 @@ defmodule Spacebrew.ConfigReader.File do
     end)
   end
 
-
   defp read_file(path) do
     Path.expand(path)
     |> File.read
@@ -111,6 +110,7 @@ end
 
 defmodule Spacebrew.Config.API do
 
+  require Logger
   @doc """
   Returns the configuration tuple.
   """
@@ -118,6 +118,25 @@ defmodule Spacebrew.Config.API do
     Enum.reduce(readers, %Spacebrew.Params{}, fn x, acc ->
       x.get_config_values(acc, x.read_from)
     end)
+    |> check_config_values
+  end
+
+  def check_config_values(config) do
+    config
+    |> check_path_exists
+  end
+
+  defp check_path_exists(config) do
+    path =
+      Map.get(config, :SPACEBREW_HOME)
+      |> Path.expand
+    path
+    |> File.dir?
+    |> unless do
+      Logger.info("\"#{path}\" doesn't exist. Creating...")
+      File.mkdir_p!(path)
+    end
+    config
   end
 
 end
